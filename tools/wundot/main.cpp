@@ -134,11 +134,10 @@ int main(int argc, char ** argv) {
     // Setup Ctrl+C signal handler
     platform::setup_sigint_handler();
 
-    // Run main inference loop (in next refactor phase we can move this into core/loop.cpp)
+    // Run main inference loop (can be refactored later)
     LOG_INF("Starting generation loop...\n");
 
-    // TODO: Move generation loop logic to `core/generation_loop.cpp` later
-    // For now, you would paste the original loop code block here and adapt any global references to app::g_*
+    // TODO: Refactor generation loop to separate module if needed
 
     // Cleanup
     if (!params.path_prompt_cache.empty() && params.prompt_cache_all && !params.prompt_cache_ro) {
@@ -149,12 +148,8 @@ int main(int argc, char ** argv) {
     common_sampler_free(smpl);
     llama_backend_free();
 
-    if (threadpool) {
-        llama_free_threadpool(threadpool);
-    }
-    if (threadpool_batch) {
-        llama_free_threadpool(threadpool_batch);
-    }
+    // ✅ Replace this with clean wrapper:
+    llama_runtime::free_threadpools(threadpool, threadpool_batch);
 
     return 0;
 }

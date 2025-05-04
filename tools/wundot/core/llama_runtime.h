@@ -7,5 +7,5 @@ namespace llama_runtime {
 
 bool initialize_backend(const common_params & params, llama_model *& model, llama_context *& ctx,
                         struct ggml_threadpool *& threadpool, struct ggml_threadpool *& threadpool_batch);
-
-}
+void free_threadpools(struct ggml_threadpool * threadpool, struct ggml_threadpool * threadpool_batch);
+}  // namespace llama_runtime

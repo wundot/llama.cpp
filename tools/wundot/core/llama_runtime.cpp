@@ -44,3 +44,20 @@ bool llama_runtime::initialize_backend(const common_params & params, llama_model
     llama_attach_threadpool(ctx, threadpool, threadpool_batch);
     return true;
 }
+
+void free_threadpools(struct ggml_threadpool * threadpool, struct ggml_threadpool * threadpool_batch) {
+    auto * reg = ggml_backend_dev_backend_reg(ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_CPU));
+    auto * ggml_threadpool_free_fn =
+        (decltype(ggml_threadpool_free) *) ggml_backend_reg_get_proc_address(reg, "ggml_threadpool_free");
+
+    if (ggml_threadpool_free_fn) {
+        if (threadpool) {
+            ggml_threadpool_free_fn(threadpool);
+        }
+        if (threadpool_batch) {
+            ggml_threadpool_free_fn(threadpool_batch);
+        }
+    } else {
+        LOG_ERR("Failed to resolve ggml_threadpool_free from backend registry\n");
+    }
+}
