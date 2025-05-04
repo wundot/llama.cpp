@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "llama.h"
+#include "sampling.h"
 
 class CoreProcessor {
   public:
@@ -11,6 +12,8 @@ class CoreProcessor {
                                int & n_past, int & n_remain);
     static void shift_context_window(llama_context * ctx, int & n_past, int n_keep);
     static void extend_context_window(llama_context * ctx, int ga_n, int ga_w, int & n_past);
+  private:
+    static void setup_threadpool(const cpu_params & cpuparams);
 };
 
 #endif  // CORE_PROCESSOR_H
