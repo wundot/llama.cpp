@@ -9,7 +9,8 @@ set(SRC_CORE
     core/chat_state.cpp
     core/llama_runtime.cpp
 )
-    platform/signal_handler.cpp
+set(SRC_PLATFORM
+    ${PLATFORM_DIR}/signal_handler.cpp
 )
 set(SRC_IO
     io/session_io.cpp
