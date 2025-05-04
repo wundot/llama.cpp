@@ -6,7 +6,6 @@
 #include "arg.h"
 #include "chat.h"
 #include "chat_state.h"
-#include "chat_templates.h"
 #include "common.h"
 #include "console.h"
 #include "llama.h"
