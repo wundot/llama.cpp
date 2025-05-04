@@ -8,9 +8,10 @@ bool llama_runtime::initialize_backend(const common_params & params, llama_model
     llama_backend_init();
     llama_numa_init(params.numa);
 
-    common_init_result llama_init = common_init_from_params(params);
-    model                         = llama_init.model.get();
-    ctx                           = llama_init.context.get();
+    common_params      mutable_params = params;
+    common_init_result llama_init     = common_init_from_params(mutable_params);
+    model                             = llama_init.model.get();
+    ctx                               = llama_init.context.get();
 
     if (model == nullptr || ctx == nullptr) {
         LOG_ERR("%s: error initializing model/context\n", __func__);
