@@ -86,8 +86,9 @@ int main(int argc, char ** argv) {
     app::g_smpl = &smpl;
 
     // Load chat template
-    const llama_vocab *          vocab          = llama_model_get_vocab(model);
-    auto                         chat_templates = common_chat_templates_init(model, params.chat_template);
+    const llama_vocab * vocab = llama_model_get_vocab(model);
+    auto                chat_templates =
+        std::shared_ptr<common_chat_templates>(common_chat_templates_init(model, params.chat_template).release());
     std::vector<common_chat_msg> chat_msgs;
 
     // Format initial prompt using template

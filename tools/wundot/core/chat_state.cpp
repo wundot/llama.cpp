@@ -4,9 +4,8 @@
 
 namespace chat_state {
 
-// Now matches unique_ptr signature
 void format_system_prompt(const std::string & system_prompt, std::vector<common_chat_msg> & chat_msgs,
-                          const std::unique_ptr<common_chat_templates> & chat_templates, bool use_jinja) {
+                          const std::shared_ptr<common_chat_templates> & chat_templates, bool use_jinja) {
     if (!system_prompt.empty()) {
         common_chat_msg msg = { "system", system_prompt };
         chat_msgs.push_back(msg);
