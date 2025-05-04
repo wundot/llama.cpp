@@ -10,9 +10,8 @@
 
 namespace chat_state {
 
-std::string format_system_prompt(const std::string & system_prompt, std::vector<common_chat_msg> & chat_msgs,
-                                 const std::shared_ptr<common_chat_templates> & chat_templates, bool use_jinja);
-
+static void format_system_prompt(const std::string &, std::vector<common_chat_msg> &,
+                                 const std::unique_ptr<common_chat_templates> &, bool);
 std::string format_user_prompt(const std::string & user_prompt, std::vector<common_chat_msg> & chat_msgs,
                                const std::shared_ptr<common_chat_templates> & chat_templates, bool use_jinja);
 
