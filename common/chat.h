@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "common.h"
 #include <string>
 #include <vector>
+
+#include "common.h"
 
 struct common_chat_templates;
 
@@ -20,13 +21,13 @@ struct common_chat_msg_content_part {
 };
 
 struct common_chat_msg {
-    std::string role;
-    std::string content;
+    std::string                               role;
+    std::string                               content;
     std::vector<common_chat_msg_content_part> content_parts = {};
-    std::vector<common_chat_tool_call> tool_calls = {};
-    std::string reasoning_content;
-    std::string tool_name;
-    std::string tool_call_id;
+    std::vector<common_chat_tool_call>        tool_calls    = {};
+    std::string                               reasoning_content;
+    std::string                               tool_name;
+    std::string                               tool_call_id;
 };
 
 struct common_chat_tool {
@@ -57,20 +58,20 @@ enum common_chat_format {
     COMMON_CHAT_FORMAT_COMMAND_R7B,
     COMMON_CHAT_FORMAT_COMMAND_R7B_EXTRACT_REASONING,
 
-    COMMON_CHAT_FORMAT_COUNT, // Not a format, just the # formats
+    COMMON_CHAT_FORMAT_COUNT,  // Not a format, just the # formats
 };
 
 struct common_chat_templates_inputs {
-    std::vector<common_chat_msg> messages;
-    std::string grammar;
-    std::string json_schema;
-    bool add_generation_prompt = true;
-    bool use_jinja = true;
+    std::vector<common_chat_msg>  messages;
+    std::string                   grammar;
+    std::string                   json_schema;
+    bool                          add_generation_prompt = true;
+    bool                          use_jinja             = true;
     // Parameters below only supported when use_jinja is true
     std::vector<common_chat_tool> tools;
-    common_chat_tool_choice tool_choice = COMMON_CHAT_TOOL_CHOICE_AUTO;
-    bool parallel_tool_calls = false;
-    bool extract_reasoning     = true;
+    common_chat_tool_choice       tool_choice         = COMMON_CHAT_TOOL_CHOICE_AUTO;
+    bool                          parallel_tool_calls = false;
+    bool                          extract_reasoning   = true;
 };
 
 struct common_chat_params {
@@ -88,46 +89,47 @@ bool common_chat_verify_template(const std::string & tmpl, bool use_jinja);
 
 void common_chat_templates_free(struct common_chat_templates * tmpls);
 
-struct common_chat_templates_deleter { void operator()(common_chat_templates * tmpls) { common_chat_templates_free(tmpls); } };
+struct common_chat_templates_deleter {
+    void operator()(common_chat_templates * tmpls) { common_chat_templates_free(tmpls); }
+};
+
+struct common_chat_templates {
+    bool has_explicit_template;  // Model had builtin template or template overridde was specified.
+    std::unique_ptr<common_chat_template> template_default;  // always set (defaults to chatml)
+    std::unique_ptr<common_chat_template> template_tool_use;
+};
 
 typedef std::unique_ptr<struct common_chat_templates, common_chat_templates_deleter> common_chat_templates_ptr;
 
-common_chat_templates_ptr common_chat_templates_init(
-                                    const struct llama_model * model,
-                                           const std::string & chat_template_override,
-                                           const std::string & bos_token_override = "",
-                                           const std::string & eos_token_override = "");
+common_chat_templates_ptr common_chat_templates_init(const struct llama_model * model,
+                                                     const std::string &        chat_template_override,
+                                                     const std::string &        bos_token_override = "",
+                                                     const std::string &        eos_token_override = "");
 
 bool         common_chat_templates_was_explicit(const struct common_chat_templates * tmpls);
 const char * common_chat_templates_source(const struct common_chat_templates * tmpls, const char * variant = nullptr);
 
-
-struct common_chat_params      common_chat_templates_apply(
-    const struct common_chat_templates * tmpls,
-    const struct common_chat_templates_inputs & inputs);
+struct common_chat_params common_chat_templates_apply(const struct common_chat_templates *        tmpls,
+                                                      const struct common_chat_templates_inputs & inputs);
 
 // Format single message, while taking into account the position of that message in chat history
-std::string common_chat_format_single(
-        const struct common_chat_templates * tmpls,
-        const std::vector<common_chat_msg> & past_msg,
-        const common_chat_msg & new_msg,
-        bool add_ass,
-        bool use_jinja);
+std::string common_chat_format_single(const struct common_chat_templates * tmpls,
+                                      const std::vector<common_chat_msg> & past_msg, const common_chat_msg & new_msg,
+                                      bool add_ass, bool use_jinja);
 
 // Returns an example of formatted chat
-std::string common_chat_format_example(
-    const struct common_chat_templates * tmpls,
-    bool use_jinja);
+std::string common_chat_format_example(const struct common_chat_templates * tmpls, bool use_jinja);
 
-std::string               common_chat_format_name(common_chat_format format);
-common_chat_msg           common_chat_parse(      const std::string & input, common_chat_format format);
+std::string     common_chat_format_name(common_chat_format format);
+common_chat_msg common_chat_parse(const std::string & input, common_chat_format format);
 
 common_chat_tool_choice common_chat_tool_choice_parse_oaicompat(const std::string & tool_choice);
 
 // Parses a JSON array of messages in OpenAI's chat completion API format.
 // T can be std::string containing JSON or nlohmann::ordered_json
 template <class T> std::vector<common_chat_msg> common_chat_msgs_parse_oaicompat(const T & messages);
-template <class T> T common_chat_msgs_to_json_oaicompat(const std::vector<common_chat_msg> & msgs, bool concat_typed_text = false);
+template <class T>
+T common_chat_msgs_to_json_oaicompat(const std::vector<common_chat_msg> & msgs, bool concat_typed_text = false);
 
 // Parses a JSON array of tools in OpenAI's chat completion tool call API format.
 // T can be std::string containing JSON or nlohmann::ordered_json
