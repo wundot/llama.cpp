@@ -1,8 +1,8 @@
 #include "signal_handler.h"
 
+#include "app_context.h"
 #include "common.h"
 #include "console.h"
-#include "core/app_context.h"
 #include "log.h"
 
 #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
