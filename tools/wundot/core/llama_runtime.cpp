@@ -1,4 +1,4 @@
-#include "core/llama_runtime.h"
+#include "llama_runtime.h"
 
 #include "log.h"
 

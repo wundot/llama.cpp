@@ -1,4 +1,4 @@
-#include "platform/signal_handler.h"
+#include "signal_handler.h"
 
 #include "common.h"
 #include "console.h"

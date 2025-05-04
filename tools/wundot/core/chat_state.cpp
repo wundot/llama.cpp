@@ -1,4 +1,4 @@
-#include "core/chat_state.h"
+#include "chat_state.h"
 
 #include "log.h"
 
