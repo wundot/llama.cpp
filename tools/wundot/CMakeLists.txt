@@ -11,6 +11,7 @@ set(SRC_CORE
     ${CORE_DIR}/app_context.cpp
     ${CORE_DIR}/chat_state.cpp
     ${CORE_DIR}/llama_runtime.cpp
+    ${CORE_DIR}/generation_loop.cpp
 )
 set(SRC_PLATFORM
     ${PLATFORM_DIR}/signal_handler.cpp

@@ -8,6 +8,7 @@
 #include "chat_state.h"
 #include "common.h"
 #include "console.h"
+#include "generation_loop.h"
 #include "llama.h"
 #include "llama_runtime.h"
 #include "log.h"
@@ -54,7 +55,6 @@ int main(int argc, char ** argv) {
         params.n_ctx = 8;
     }
 
-    // Log rope settings
     if (params.rope_freq_base != 0.0) {
         LOG_WRN("%s: RoPE base set to %g\n", __func__, params.rope_freq_base);
     }
@@ -100,7 +100,6 @@ int main(int argc, char ** argv) {
         if (!params.prompt.empty()) {
             chat_state::format_user_prompt(params.prompt, chat_msgs, chat_templates, params.use_jinja);
         }
-
         if (!params.system_prompt.empty() || !params.prompt.empty()) {
             prompt = chat_state::apply_chat_template(chat_msgs, chat_templates, !params.prompt.empty());
         }
@@ -108,11 +107,8 @@ int main(int argc, char ** argv) {
         prompt = params.prompt;
     }
 
-    // Tokenize prompt
-    std::vector<llama_token> embd_inp;
+    // Tokenize or load session
     std::vector<llama_token> session_tokens;
-    bool                     waiting_for_first_input = prompt.empty();
-
     if (!params.path_prompt_cache.empty()) {
         if (session_io::file_exists(params.path_prompt_cache) && !session_io::file_is_empty(params.path_prompt_cache)) {
             LOG_INF("Loading session from %s\n", params.path_prompt_cache.c_str());
@@ -125,21 +121,16 @@ int main(int argc, char ** argv) {
         }
     }
 
-    if (prompt.empty() && !session_tokens.empty()) {
-        embd_inp = session_tokens;
-    } else {
-        embd_inp = common_tokenize(ctx, prompt, true, true);
-    }
-
     // Setup Ctrl+C signal handler
     platform::setup_sigint_handler();
 
-    // Run main inference loop (can be refactored later)
     LOG_INF("Starting generation loop...\n");
 
-    // TODO: Refactor generation loop to separate module if needed
+    // Run modular generation loop
+    generation::run_generation_loop(ctx, model, smpl, *app::g_input_tokens, session_tokens, *app::g_output_ss, prompt,
+                                    &chat_msgs, chat_templates);
 
-    // Cleanup
+    // Save session if needed
     if (!params.path_prompt_cache.empty() && params.prompt_cache_all && !params.prompt_cache_ro) {
         session_io::save_session(ctx, params.path_prompt_cache, session_tokens);
     }
@@ -147,8 +138,6 @@ int main(int argc, char ** argv) {
     common_perf_print(ctx, smpl);
     common_sampler_free(smpl);
     llama_backend_free();
-
-    // ✅ Replace this with clean wrapper:
     llama_runtime::free_threadpools(threadpool, threadpool_batch);
 
     return 0;
