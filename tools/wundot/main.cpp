@@ -2,18 +2,18 @@
 #include <string>
 #include <vector>
 
+#include "app_context.h"
 #include "arg.h"
 #include "chat.h"
+#include "chat_state.h"
 #include "common.h"
 #include "console.h"
-#include "core/app_context.h"
-#include "core/chat_state.h"
-#include "core/llama_runtime.h"
-#include "io/session_io.h"
 #include "llama.h"
+#include "llama_runtime.h"
 #include "log.h"
-#include "platform/signal_handler.h"
 #include "sampling.h"
+#include "session_io.h"
+#include "signal_handler.h"
 
 static void print_usage(int argc, char ** argv) {
     (void) argc;
