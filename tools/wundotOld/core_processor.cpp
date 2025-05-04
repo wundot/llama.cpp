@@ -1,6 +1,5 @@
 // core_processor.cpp
 #include "core_processor.h"
-
 #include "log.h"
 
 void CoreProcessor::process_tokens(llama_context * ctx, common_sampler * smpl, std::vector<llama_token> & embd,

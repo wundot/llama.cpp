@@ -1,5 +1,5 @@
-#ifndef INIT_H
-#define INIT_H
+#ifndef INITIALIZER_H
+#define INITIALIZER_H
 
 #include "common.h"
 #include "llama.h"
@@ -14,4 +14,4 @@ class Initializer {
     static void setup_threadpool(const cpu_params & cpuparams);
 };
 
-#endif  // INIT_H
+#endif  // INITIALIZER_H
