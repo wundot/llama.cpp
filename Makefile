@@ -45,6 +45,7 @@ BUILD_TARGETS = \
 	llama-vdot \
 	llama-cvector-generator \
 	llama-gen-docs \
+	wundot-cli \
 	tests/test-c.o
 
 # Binaries only useful for tests
@@ -1185,6 +1186,14 @@ llama-cli: tools/main/main.cpp \
 	$(CXX) $(CXXFLAGS) $(filter-out %.h $<,$^) $(call GET_OBJ_FILE, $<) -o $@ $(LDFLAGS)
 	@echo
 	@echo '====  Run ./llama-cli -h for help.  ===='
+	@echo
+
+wundot-cli: tools/wundot/main.cpp \
+	$(OBJ_ALL)
+	$(CXX) $(CXXFLAGS) -c $< -o $(call GET_OBJ_FILE, $<)
+	$(CXX) $(CXXFLAGS) $(filter-out %.h $<,$^) $(call GET_OBJ_FILE, $<) -o $@ $(LDFLAGS)
+	@echo
+	@echo '====  Run ./wundot-cli -h for help.  ===='
 	@echo
 
 llama-infill: examples/infill/infill.cpp \
