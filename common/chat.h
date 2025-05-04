@@ -6,6 +6,9 @@
 #include <vector>
 
 #include "common.h"
+#include "minja/chat-template.hpp"
+
+typedef minja::chat_template common_chat_template;
 
 struct common_chat_templates;
 
