@@ -1,3 +1,5 @@
+#include <arg.h>
+
 #include <iostream>
 #include <vector>
 
@@ -8,8 +10,8 @@
 #include "llama.h"
 #include "log.h"
 #include "output_generator.h"
+#include "sampling.h"
 #include "signal_handler.h"
-#include <arg.h>
 
 int main(int argc, char ** argv) {
     // Parse command-line arguments
@@ -65,4 +67,14 @@ int main(int argc, char ** argv) {
     Initializer::cleanup();
 
     return 0;
+}
+
+static void print_usage(int argc, char ** argv) {
+    (void) argc;
+
+    LOG("\nexample usage:\n");
+    LOG("\n  text generation:     %s -m your_model.gguf -p \"I believe the meaning of life is\" -n 128 -no-cnv\n",
+        argv[0]);
+    LOG("\n  chat (conversation): %s -m your_model.gguf -sys \"You are a helpful assistant\"\n", argv[0]);
+    LOG("\n");
 }
