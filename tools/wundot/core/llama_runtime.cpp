@@ -4,9 +4,8 @@
 
 namespace llama_runtime {
 
-bool llama_runtime::initialize_backend(const common_params & params, llama_model *& model, llama_context *& ctx,
-                                       struct ggml_threadpool *& threadpool,
-                                       struct ggml_threadpool *& threadpool_batch) {
+bool initialize_backend(const common_params & params, llama_model *& model, llama_context *& ctx,
+                        struct ggml_threadpool *& threadpool, struct ggml_threadpool *& threadpool_batch) {
     llama_backend_init();
     llama_numa_init(params.numa);
 
