@@ -15,6 +15,11 @@ void run_generation_loop(llama_context * ctx, llama_model * model, common_sample
                          std::shared_ptr<common_chat_templates> chat_templates) {
     const common_params & params = *app::g_params;
 
+    // Silence unused parameter warnings (can be removed when used)
+    (void) input_tokens;
+    (void) chat_history;
+    (void) chat_templates;
+
     const llama_vocab *      vocab = llama_model_get_vocab(model);
     std::vector<llama_token> embd_inp;
 
@@ -31,10 +36,9 @@ void run_generation_loop(llama_context * ctx, llama_model * model, common_sample
     }
 
     // Setup runtime state
-    bool display    = params.display_prompt;
-    int  n_past     = 0;
-    int  n_remain   = params.n_predict;
-    int  n_consumed = 0;
+    int n_past     = 0;
+    int n_remain   = params.n_predict;
+    int n_consumed = 0;
 
     std::ostringstream       assistant_ss;
     std::vector<llama_token> embd;
@@ -82,7 +86,9 @@ void run_generation_loop(llama_context * ctx, llama_model * model, common_sample
         for (auto id : embd) {
             std::string token_str = common_token_to_piece(ctx, id);
             output_stream << token_str;
-            *app::g_output_tokens << id;
+            if (app::g_output_tokens) {
+                app::g_output_tokens->push_back(id);
+            }
             LOG("%s", token_str.c_str());
         }
 
