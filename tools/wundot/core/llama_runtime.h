@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.h"
-#include "ggml/ggml.h"
 #include "llama.h"
 
 namespace llama_runtime {
