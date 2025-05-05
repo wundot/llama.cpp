@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "chat.h"
 #include "common.h"
 #include "llama.h"
 #include "sampling.h"

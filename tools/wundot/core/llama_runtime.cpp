@@ -21,8 +21,8 @@ bool llama_runtime::initialize_backend(const common_params & params, llama_model
     auto * reg = ggml_backend_dev_backend_reg(ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_CPU));
     auto * ggml_threadpool_new_fn =
         (decltype(ggml_threadpool_new) *) ggml_backend_reg_get_proc_address(reg, "ggml_threadpool_new");
-    auto * ggml_threadpool_free_fn =
-        (decltype(ggml_threadpool_free) *) ggml_backend_reg_get_proc_address(reg, "ggml_threadpool_free");
+    // auto * ggml_threadpool_free_fn =
+    //     (decltype(ggml_threadpool_free) *) ggml_backend_reg_get_proc_address(reg, "ggml_threadpool_free");
 
     struct ggml_threadpool_params tpp_batch = ggml_threadpool_params_from_cpu_params(params.cpuparams_batch);
     struct ggml_threadpool_params tpp       = ggml_threadpool_params_from_cpu_params(params.cpuparams);
