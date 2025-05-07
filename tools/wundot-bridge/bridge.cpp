@@ -98,7 +98,12 @@ extern "C" const char * run_inferance_wrapper(const char * prompt) {
         ++n_past;
     }
 
-    return output_buffer.str().c_str();  // lifetime is static via ostringstream
+    //  persists after function returns
+    static std::string output_string;
+    //  safe to return pointer
+    output_string = output_buffer.str();
+    // Go can call C.GoString() on it
+    return output_string.c_str();
 }
 
 extern "C" void run_cleanup_wrapper() {
