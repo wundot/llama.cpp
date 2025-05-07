@@ -5,6 +5,7 @@ endif
 # Define the default target now so that it is always the first target
 BUILD_TARGETS = \
 	libllava.a \
+	wundot-bridge \
 	llama-batched \
 	llama-batched-bench \
 	llama-bench \
@@ -46,7 +47,6 @@ BUILD_TARGETS = \
 	llama-cvector-generator \
 	llama-gen-docs \
 	wundot-cli \
-	lib-wundot-bridge \
 	llama_wrapper \
 	tests/test-c.o
 
@@ -1391,7 +1391,7 @@ llama-server: \
 	$(CXX) $(CXXFLAGS) -c $< -o $(call GET_OBJ_FILE, $<)
 	$(CXX) $(CXXFLAGS) $(filter-out %.h %.hpp $<,$^) -Itools/server $(call GET_OBJ_FILE, $<) -o $@ $(LDFLAGS) $(LWINSOCK2)
 
-lib-wundot-bridge: \
+wundot-bridge: \
     tools/wundot-bridge/bridgen.cpp  \
 	tools/wundot-bridge/bridgen.h  \$(OBJ_ALL)
 	$(CXX) $(CXXFLAGS) -fPIC -c $< -o $(call GET_OBJ_FILE, $<)

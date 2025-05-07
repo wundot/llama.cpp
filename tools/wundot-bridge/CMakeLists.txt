@@ -1,50 +1,26 @@
-# Minimum required version of CMake
 cmake_minimum_required(VERSION 3.14)
 
-# Project name and language
-project(wundot_bridge LANGUAGES CXX)
+# Project metadata
+project(wundot-bridge LANGUAGES CXX)
 
-# Set the output shared library name
+# Set the target name
 set(TARGET wundot-bridge)
 
-# Add the source file for the shared library
+# Build the shared library
 add_library(${TARGET} SHARED bridge.cpp)
 
-# Include directories for headers
+# Include necessary directories
 target_include_directories(${TARGET} PRIVATE
-    ${CMAKE_SOURCE_DIR}/include           # For llama-cpp.h, llama.h
-    ${CMAKE_SOURCE_DIR}/common            # For common utilities like arg.h, chat.h, etc.
-    ${CMAKE_CURRENT_SOURCE_DIR}           # For bridge.h in the current directory
+    ${CMAKE_SOURCE_DIR}/include         # For llama-cpp.h, llama.h
+    ${CMAKE_SOURCE_DIR}/common          # For arg.h, chat.h, etc.
+    ${CMAKE_CURRENT_SOURCE_DIR}         # For bridge.h
 )
 
-# Link the required libraries
-target_link_libraries(${TARGET} PRIVATE
-    llama                                 # The main llama library
-    ggml                                  # The GGML library
-    common                                # Common utilities library
-    Threads::Threads                      # Thread support
-)
+# Link required libraries
+target_link_libraries(${TARGET} PRIVATE common llama ggml ${CMAKE_THREAD_LIBS_INIT})
 
-# Specify the required C++ standard
+# Require C++17
 target_compile_features(${TARGET} PRIVATE cxx_std_17)
 
-# Compiler flags for shared library compatibility
-set_target_properties(${TARGET} PROPERTIES
-    POSITION_INDEPENDENT_CODE ON          # Ensure Position Independent Code (PIC) is enabled
-    PREFIX ""                             # Remove "lib" prefix on Unix systems if desired
-    SUFFIX ".so"                          # Ensure the output is named as a shared library
-)
-
 # Install the shared library
-install(TARGETS ${TARGET}
-    EXPORT wundot-bridge-targets          # Add the target to an export set
-    LIBRARY DESTINATION ${LLAMA_LIB_INSTALL_DIR}  # Install to the library directory
-    PUBLIC_HEADER DESTINATION ${LLAMA_INCLUDE_INSTALL_DIR}  # Install headers
-)
-
-# Export the shared library
-export(TARGETS ${TARGET} FILE ${CMAKE_BINARY_DIR}/${TARGET}-targets.cmake)
-
-# Import the export sets for dependencies
-include(${CMAKE_BINARY_DIR}/llama-targets.cmake)
-include(${CMAKE_BINARY_DIR}/ggml-targets.cmake)
+install(TARGETS ${TARGET} LIBRARY)
