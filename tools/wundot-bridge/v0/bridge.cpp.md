@@ -5,7 +5,6 @@
 #include <sstream>
 #include <string>
 #include <thread>  // Needed for std::thread::hardware_concurrency
-#include <vector>
 
 #include "chat.h"
 #include "common.h"
@@ -21,24 +20,26 @@ static std::ostringstream output_buffer;
 static std::mutex         infer_mutex;
 static int                g_n_predict = 128;
 
-static std::vector<llama_token> embd_inp;
-static int                      n_past = 0;
-static std::string              token_buffer;
-
 extern "C" void * load_model_wrapper(const char * model_path, int n_predict) {
     std::lock_guard<std::mutex> lock(infer_mutex);
     g_n_predict = n_predict;
 
     common_params params;
+    // Set model path correctly
     params.model.path          = model_path;
+    // Set context and prediction size
     params.n_ctx               = 2048;
     params.n_predict           = n_predict;
+    // Set thread count inside cpuparams
     params.cpuparams.n_threads = std::thread::hardware_concurrency();
+    // Set seed inside sampling struct
     params.sampling.seed       = static_cast<uint32_t>(time(NULL));
 
+    // NUMA setup
     llama_backend_init();
     llama_numa_init(params.numa);
 
+    // Initialize model and context
     common_init_result res = common_init_from_params(params);
     model                  = res.model.release();
     ctx                    = res.context.release();
@@ -47,6 +48,7 @@ extern "C" void * load_model_wrapper(const char * model_path, int n_predict) {
         return nullptr;
     }
 
+    // Initialize sampler
     common_sampler * smpl = common_sampler_init(model, params.sampling);
     if (!smpl) {
         return nullptr;
@@ -74,11 +76,13 @@ extern "C" const char * run_inferance_wrapper(const char * prompt) {
     const int n_ctx  = llama_n_ctx(ctx);
     int       n_past = 0;
 
+    // Evaluate input tokens
     if (llama_decode(ctx, llama_batch_get_one(input_tokens.data(), input_tokens.size())) != 0) {
         return "Failed to evaluate input tokens.";
     }
     n_past += input_tokens.size();
 
+    // Generate tokens
     for (int i = 0; i < g_n_predict; ++i) {
         llama_token id = common_sampler_sample(sampler, ctx, -1);
         common_sampler_accept(sampler, id, true);
@@ -96,45 +100,12 @@ extern "C" const char * run_inferance_wrapper(const char * prompt) {
         ++n_past;
     }
 
+    //  persists after function returns
     static std::string output_string;
+    //  safe to return pointer
     output_string = output_buffer.str();
+    // Go can call C.GoString() on it
     return output_string.c_str();
-}
-
-extern "C" void start_stream_wrapper(const char * prompt) {
-    std::lock_guard<std::mutex> lock(infer_mutex);
-
-    embd_inp = common_tokenize(ctx, prompt, true, true);
-    n_past   = 0;
-
-    llama_decode(ctx, llama_batch_get_one(embd_inp.data(), embd_inp.size()));
-    n_past = embd_inp.size();
-}
-
-extern "C" const char * next_token_wrapper() {
-    std::lock_guard<std::mutex> lock(infer_mutex);
-
-    if (!ctx || !model || !sampler) {
-        return nullptr;
-    }
-
-    llama_token id = common_sampler_sample(sampler, ctx, -1);
-    if (llama_vocab_is_eog(llama_model_get_vocab(model), id)) {
-        return nullptr;
-    }
-
-    common_sampler_accept(sampler, id, true);
-    llama_decode(ctx, llama_batch_get_one(&id, 1));
-    ++n_past;
-
-    token_buffer = common_token_to_piece(ctx, id);
-    return token_buffer.c_str();
-}
-
-extern "C" void end_stream_wrapper() {
-    std::lock_guard<std::mutex> lock(infer_mutex);
-    embd_inp.clear();
-    n_past = 0;
 }
 
 extern "C" void run_cleanup_wrapper() {
@@ -144,10 +115,12 @@ extern "C" void run_cleanup_wrapper() {
         common_sampler_free(sampler);
         sampler = nullptr;
     }
+
     if (ctx) {
         llama_free(ctx);
         ctx = nullptr;
     }
+
     if (model) {
         llama_free_model(model);
         model = nullptr;

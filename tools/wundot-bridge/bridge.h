@@ -1,5 +1,3 @@
-// tools/wundot-bridge/bridge.h
-
 #ifndef WUNDOT_BRIDGE_H
 #define WUNDOT_BRIDGE_H
 
@@ -7,11 +5,20 @@
 extern "C" {
 #endif
 
-// Load the model from the specified path
-void * load_model_wrapper(const char * model_path);
+// Load the model from the specified path with prediction size
+void * load_model_wrapper(const char * model_path, int n_predict);
 
-// Run inference with the given prompt
+// Run single inference with full response
 const char * run_inferance_wrapper(const char * prompt);
+
+// Start streaming inference with a prompt
+void start_stream_wrapper(const char * prompt);
+
+// Get next token from stream; returns NULL when done
+const char * next_token_wrapper();
+
+// End streaming inference session
+void end_stream_wrapper();
 
 // Free model and context memory
 void run_cleanup_wrapper();
