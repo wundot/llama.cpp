@@ -1,8 +1,10 @@
 #include "bridge.h"
 
+#include <ctime>  // Needed for time(NULL)
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <thread>  // Needed for std::thread::hardware_concurrency
 
 #include "chat.h"
 #include "common.h"
@@ -21,15 +23,21 @@ extern "C" void * load_model_wrapper(const char * model_path) {
     std::lock_guard<std::mutex> lock(infer_mutex);
 
     common_params params;
-    params.model.path = model_path;
-    params.n_ctx      = 2048;
-    params.seed       = time(NULL);
-    params.n_threads  = std::thread::hardware_concurrency();
-    params.n_predict  = 128;
+    // Set model path correctly
+    params.model.path          = model_path;
+    // Set context and prediction size
+    params.n_ctx               = 2048;
+    params.n_predict           = 128;
+    // Set thread count inside cpuparams
+    params.cpuparams.n_threads = std::thread::hardware_concurrency();
+    // Set seed inside sampling struct
+    params.sampling.seed       = static_cast<uint32_t>(time(NULL));
 
+    // NUMA setup
     llama_backend_init();
     llama_numa_init(params.numa);
 
+    // Initialize model and context
     common_init_result res = common_init_from_params(params);
     model                  = res.model.release();
     ctx                    = res.context.release();
@@ -38,6 +46,7 @@ extern "C" void * load_model_wrapper(const char * model_path) {
         return nullptr;
     }
 
+    // Initialize sampler
     common_sampler * smpl = common_sampler_init(model, params.sampling);
     if (!smpl) {
         return nullptr;
