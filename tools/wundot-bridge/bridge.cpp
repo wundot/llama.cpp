@@ -21,11 +21,11 @@ extern "C" void * load_model_wrapper(const char * model_path) {
     std::lock_guard<std::mutex> lock(infer_mutex);
 
     common_params params;
-    params.model     = std::string(model_path);
-    params.n_ctx     = 2048;
-    params.seed      = time(NULL);
-    params.n_threads = std::thread::hardware_concurrency();
-    params.n_predict = 128;
+    params.model.path = model_path;
+    params.n_ctx      = 2048;
+    params.seed       = time(NULL);
+    params.n_threads  = std::thread::hardware_concurrency();
+    params.n_predict  = 128;
 
     llama_backend_init();
     llama_numa_init(params.numa);
