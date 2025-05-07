@@ -21,7 +21,7 @@ extern "C" void * load_model_wrapper(const char * model_path) {
     std::lock_guard<std::mutex> lock(infer_mutex);
 
     common_params params;
-    params.model     = model_path;
+    params.model     = std::string(model_path);
     params.n_ctx     = 2048;
     params.seed      = time(NULL);
     params.n_threads = std::thread::hardware_concurrency();
