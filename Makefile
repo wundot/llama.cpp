@@ -46,6 +46,7 @@ BUILD_TARGETS = \
 	llama-cvector-generator \
 	llama-gen-docs \
 	wundot-cli \
+	llama_wrapper \
 	tests/test-c.o
 
 # Binaries only useful for tests

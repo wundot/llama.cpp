@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package llama;
+
+
+
+service LlamaService {
+  rpc GenerateText(TextRequest) returns (TextResponse);
+}
+
+message TextRequest {
+  string prompt = 1;
+  int32 max_tokens = 2;
+  bool stream = 3; 
+}
+
+message TextResponse {
+  string generated_text = 1;
+}
