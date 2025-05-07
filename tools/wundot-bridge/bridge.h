@@ -1,4 +1,5 @@
-// binder.h
+// tools/wundot-bridge/bridge.h
+
 #ifndef WUNDOT_BRIDGE_H
 #define WUNDOT_BRIDGE_H
 
@@ -6,14 +7,14 @@
 extern "C" {
 #endif
 
-// Initialize model context
-void * init_model(const char * model_path);
+// Load the model from the specified path
+void * load_model_wrapper(const char * model_path);
 
-// Run inference and get result string
-const char * run_inference(void * ctx, const char * prompt);
+// Run inference with the given prompt
+const char * run_inferance_wrapper(const char * prompt);
 
-// Free the model context
-void free_model(void * ctx);
+// Free model and context memory
+void run_cleanup_wrapper();
 
 #ifdef __cplusplus
 }
