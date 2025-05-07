@@ -37,9 +37,14 @@ set_target_properties(${TARGET} PROPERTIES
 
 # Install the shared library
 install(TARGETS ${TARGET}
+    EXPORT wundot-bridge-targets          # Add the target to an export set
     LIBRARY DESTINATION ${LLAMA_LIB_INSTALL_DIR}  # Install to the library directory
     PUBLIC_HEADER DESTINATION ${LLAMA_INCLUDE_INSTALL_DIR}  # Install headers
 )
 
-# Optional: Export the shared library for use by other projects
+# Export the shared library
 export(TARGETS ${TARGET} FILE ${CMAKE_BINARY_DIR}/${TARGET}-targets.cmake)
+
+# Import the export sets for dependencies
+include(${CMAKE_BINARY_DIR}/llama-targets.cmake)
+include(${CMAKE_BINARY_DIR}/ggml-targets.cmake)
