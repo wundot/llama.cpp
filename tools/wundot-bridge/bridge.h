@@ -1,21 +1,22 @@
-#ifndef BRIDGE_H
-#define BRIDGE_H
+// binder.h
+#ifndef WUNDOT_BRIDGE_H
+#define WUNDOT_BRIDGE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Context type definition (opaque pointer)
-typedef void llama_context;
+// Initialize model context
+void * init_model(const char * model_path);
 
-// Function to load the model
-void * load_model(const char * model_path, int n_ctx, int n_threads);
+// Run inference and get result string
+const char * run_inference(void * ctx, const char * prompt);
 
-// Function to process a prompt and generate a response
-const char * process_prompt(void * ctx, const char * prompt);
+// Free the model context
+void free_model(void * ctx);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // BRIDGE_H
+#endif  // WUNDOT_BRIDGE_H
