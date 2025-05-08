@@ -27,12 +27,20 @@ struct InferenceSession {
     std::string              token_buffer;
 };
 
+// ✅ Helper function to create a default sampler
+common_sampler * create_default_sampler(llama_model * model) {
+    common_params_sampling sampling_params;
+    sampling_params.seed = static_cast<uint32_t>(time(NULL));
+    return common_sampler_init(model, sampling_params);
+}
+
 extern "C" void * load_model_wrapper(const char * model_path, int n_predict) {
     std::lock_guard<std::mutex> lock(global_model_mutex);
 
     if (global_model != nullptr) {
         return global_model;
     }
+
     global_n_predict = n_predict;
 
     common_params params;
@@ -75,7 +83,7 @@ extern "C" const char * run_inferance_wrapper(const char * prompt) {
         return "Failed to create context.";
     }
 
-    common_sampler * sampler = common_sampler_init(global_model, common_sampling_params());
+    common_sampler * sampler = create_default_sampler(global_model);
 
     std::vector<llama_token> input_tokens = common_tokenize(ctx, prompt, true, true);
     if (input_tokens.empty()) {
@@ -111,7 +119,7 @@ extern "C" InferenceSession * session_create(const char * model_path, int n_pred
     llama_context_params lparams = llama_context_default_params();
     lparams.n_ctx                = 2048;
     session->ctx                 = llama_new_context_with_model(global_model, lparams);
-    session->sampler             = common_sampler_init(global_model, common_sampling_params());
+    session->sampler             = create_default_sampler(global_model);
     session->n_past              = 0;
     return session;
 }
@@ -120,6 +128,7 @@ extern "C" void session_free(InferenceSession * session) {
     if (!session) {
         return;
     }
+
     if (session->sampler) {
         common_sampler_free(session->sampler);
     }
