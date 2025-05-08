@@ -5,23 +5,22 @@
 extern "C" {
 #endif
 
-// Load the model from the specified path with prediction size
+// Global model loading (one-time)
 void * load_model_wrapper(const char * model_path, int n_predict);
+void   run_cleanup_wrapper();
 
-// Run single inference with full response
+// Stateless full inference (for simple use)
 const char * run_inferance_wrapper(const char * prompt);
 
-// Start streaming inference with a prompt
-void start_stream_wrapper(const char * prompt);
+// Inference session struct forward-declared
+typedef struct InferenceSession InferenceSession;
 
-// Get next token from stream; returns NULL when done
-const char * next_token_wrapper();
+// Session-based streaming interface
+InferenceSession * session_create(const char * model_path, int n_predict);
+void               session_free(InferenceSession * session);
 
-// End streaming inference session
-void end_stream_wrapper();
-
-// Free model and context memory
-void run_cleanup_wrapper();
+void         session_start_stream(InferenceSession * session, const char * prompt);
+const char * session_next_token(InferenceSession * session);
 
 #ifdef __cplusplus
 }
