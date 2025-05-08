@@ -15,9 +15,9 @@
 #include "sampling.h"
 
 // Shared model instance
-tatic llama_model * global_model = nullptr;
-tatic std::mutex global_model_mutex;
-tatic int        global_n_predict = 110000;
+static llama_model * global_model = nullptr;
+static std::mutex    global_model_mutex;
+static int           global_n_predict = 110000;
 
 struct InferenceSession {
     llama_context *          ctx;
