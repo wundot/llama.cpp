@@ -40,6 +40,7 @@ BUILD_TARGETS = \
 	llama-simple \
 	llama-simple-chat \
 	llama-run \
+	wundot-bridge \
 	llama-speculative \
 	llama-tokenize \
 	llama-vdot \
@@ -1374,6 +1375,15 @@ llama-server: \
 	$(OBJ_ALL)
 	$(CXX) $(CXXFLAGS) -c $< -o $(call GET_OBJ_FILE, $<)
 	$(CXX) $(CXXFLAGS) $(filter-out %.h %.hpp $<,$^) -Itools/server $(call GET_OBJ_FILE, $<) -o $@ $(LDFLAGS) $(LWINSOCK2)
+
+wundot-bridge: \
+    tools/wundot-bridge/bridgen.cpp  \
+	tools/wundot-bridge/bridgen.h  \$(OBJ_ALL)
+	$(CXX) $(CXXFLAGS) -fPIC -c $< -o $(call GET_OBJ_FILE, $<)
+	$(CXX) -shared $(CXXFLAGS) $(filter-out %.h $<,$^) $(call GET_OBJ_FILE, $<) -o $@ $(LDFLAGS)
+	@echo
+	@echo '====  Built shared library: libwundot.so  ===='
+	@echo
 
 # Portable equivalent of `cd tools/server/public && xxd -i $(notdir $<) ../$(notdir $<).hpp`:
 tools/server/%.hpp: tools/server/public/% FORCE Makefile
