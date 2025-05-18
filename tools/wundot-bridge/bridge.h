@@ -1,39 +1,33 @@
-#pragma once
+#ifndef BRIDGE_H
+#define BRIDGE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Structure for sampling parameters
-typedef struct {
-    float temperature;
-    int   top_k;
-    float top_p;
-    float repeat_penalty;
-    int   n_predict;
-} SamplingParams;
+// Load the model and initialize a context pool for concurrent use
+// model_path: path to the .gguf or compatible model file
+// n_predict: maximum number of tokens to generate per inference
+bool Load_Model(const char * model_path, int n_predict);
 
-// InferenceSession handle for stateful inference across multiple calls
-typedef struct InferenceSession InferenceSession;
+// Anchors a persona by accepting system and user prompts (stub for API consistency)
+// For real usage, provide persona info per Run_Inference call
+bool Load_Anchor_Persona(const char * system_prompt, const char * user_prompt);
 
-// Load and initialize the model
-void * load_model_wrapper(const char * model_path, int n_predict);
+// Replaces the simpler version of Run_Inference
+// Accepts:
+//   - system_prompt: defines AI persona (e.g., "You are a fraud detection assistant")
+//   - user_history: optional prior user statement (can be empty)
+//   - current_prompt: the actual current user input to infer from
+// Returns:
+//   - thread-local char* with generated response
+const char * Run_Inference(const char * system_prompt, const char * user_history, const char * current_prompt);
 
-// Free model and backend
-void run_cleanup_wrapper();
-
-// Run a stateless inference on the provided prompt
-const char * run_inferance_wrapper(const char * prompt);
-
-// Run inference with custom sampling parameters
-const char * run_infer_with_sampling(const char * prompt, SamplingParams params);
-
-// Stateful inference session
-InferenceSession * session_create(const char * model_path, int n_predict);
-void               session_free(InferenceSession * session);
-void               session_start_stream(InferenceSession * session, const char * prompt);
-const char *       session_next_token(InferenceSession * session);
+// Frees all memory: model, contexts, samplers, and shuts down the backend
+void Run_Cleanup();
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif  // BRIDGE_H

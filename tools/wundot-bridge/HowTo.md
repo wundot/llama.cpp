@@ -3,3 +3,6 @@ rm -rf build && mkdir build && cd build
 cmake .. && make -j$(nproc)
 <!-- build with CPU & GPU  -->
  cmake -DGGML_CUDA=ON .. && mkdir build && cd build
+
+
+git config --global push.autoSetupRemote true
