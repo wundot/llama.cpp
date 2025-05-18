@@ -11,11 +11,17 @@
 #include "common.h"
 #include "llama.h"
 #include "sampling.h"
+#include "xsampling.h"
+// ======== Forward Declarations for Local Profile Functions ========
+sampling_params CreativeProfile();
+sampling_params BalancedProfile();
+sampling_params ConservativeProfile();
+sampling_params FraudDetectionProfile();
 
 constexpr int MAX_CONTEXT_POOL_SIZE = 8;
 
 static llama_model *   g_model = nullptr;
-static sampling_params g_sampling_params;  // Global sampling config
+static sampling_params g_sampling_params;
 
 struct InferenceSession {
     llama_context *  ctx;
@@ -25,6 +31,8 @@ struct InferenceSession {
 static std::queue<InferenceSession> g_context_pool;
 static std::mutex                   g_pool_mutex;
 static std::condition_variable      g_pool_cv;
+
+// ======== Profile Definitions ========
 
 sampling_params CreativeProfile() {
     sampling_params p = g_sampling_params;
@@ -55,18 +63,19 @@ sampling_params ConservativeProfile() {
 
 sampling_params FraudDetectionProfile() {
     sampling_params p   = g_sampling_params;
-    p.temp              = 0.35f;  // More focused, less creative
-    p.top_p             = 0.8f;   // Narrow probability mass
-    p.top_k             = 25;     // Limited token set
-    p.repeat_penalty    = 1.35f;  // Stronger control over repetition
-    p.presence_penalty  = 0.25f;  // Encourage exploration of new tokens
-    p.frequency_penalty = 0.15f;  // Reduce word reuse slightly
-    p.mirostat          = 0;      // Disable dynamic entropy control
+    p.temp              = 0.35f;
+    p.top_p             = 0.8f;
+    p.top_k             = 25;
+    p.repeat_penalty    = 1.35f;
+    p.presence_penalty  = 0.25f;
+    p.frequency_penalty = 0.15f;
+    p.mirostat          = 0;
     return p;
 }
 
 extern "C" sampling_params Get_FraudDetection_Params(const char * profile_name) {
     std::string mode = profile_name ? profile_name : "balanced";
+
     if (mode == "strict") {
         sampling_params p = FraudDetectionProfile();
         p.temp            = 0.3f;
@@ -74,36 +83,22 @@ extern "C" sampling_params Get_FraudDetection_Params(const char * profile_name) 
         p.top_k           = 20;
         p.repeat_penalty  = 1.4f;
         return p;
-    } else if (mode == "balanced") {
-        return FraudDetectionProfile();
     } else if (mode == "sensitive") {
         sampling_params p   = FraudDetectionProfile();
         p.presence_penalty  = 0.4f;
         p.frequency_penalty = 0.3f;
         return p;
+    } else {
+        return FraudDetectionProfile();
     }
-    // Default fallback
-    return FraudDetectionProfile();
 }
 
-else if (mode == "balanced") {
-    sampling_params p = FraudDetectionProfile();
-    return p;  // default
-}
-else if (mode == "sensitive") {
-    sampling_params p   = FraudDetectionProfile();
-    p.presence_penalty  = 0.4f;
-    p.frequency_penalty = 0.3f;
-    return p;
-}
-}
-return FraudDetectionProfile();
-}
+// ======== Model Lifecycle ========
 
 bool Load_Model(const char * model_path, int n_predict) {
     std::lock_guard<std::mutex> lock(g_pool_mutex);
     if (g_model) {
-        return true;  // Already initialized
+        return true;
     }
 
     common_params params;
@@ -119,12 +114,19 @@ bool Load_Model(const char * model_path, int n_predict) {
         return false;
     }
 
-    // Copy sampling params globally
-    g_sampling_params = params.sampling;
+    // ✅ Field-by-field copy from common_params::sampling to sampling_params
+    g_sampling_params.temp              = params.sampling.temp;
+    g_sampling_params.top_p             = params.sampling.top_p;
+    g_sampling_params.top_k             = params.sampling.top_k;
+    g_sampling_params.repeat_penalty    = params.sampling.repeat_penalty;
+    g_sampling_params.presence_penalty  = params.sampling.presence_penalty;
+    g_sampling_params.frequency_penalty = params.sampling.frequency_penalty;
+    g_sampling_params.mirostat          = params.sampling.mirostat;
+    g_sampling_params.n_predict         = params.n_predict;
 
-    // Initialize context pool
     for (int i = 0; i < MAX_CONTEXT_POOL_SIZE; ++i) {
-        llama_context * ctx = llama_new_context_with_model(g_model);
+        llama_context_params ctx_params = llama_context_default_params();
+        llama_context *      ctx        = llama_init_from_model(g_model, ctx_params);
         if (!ctx) {
             return false;
         }
@@ -152,7 +154,6 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
 
     InferenceSession session;
 
-    // Acquire context from pool
     {
         std::unique_lock<std::mutex> lock(g_pool_mutex);
         g_pool_cv.wait(lock, [] { return !g_context_pool.empty(); });
@@ -161,13 +162,11 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
         g_context_pool.pop();
     }
 
-    // Reset the sampler with current sampling params
     if (session.sampler) {
         common_sampler_free(session.sampler);
     }
     session.sampler = common_sampler_init(g_model, g_sampling_params);
 
-    // Local output + chat history
     std::ostringstream           output;
     std::vector<common_chat_msg> chat_msgs;
 
@@ -205,14 +204,12 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
         llama_decode(session.ctx, llama_batch_get_one(&id, 1));
     }
 
-    // Return context to pool
     {
         std::lock_guard<std::mutex> lock(g_pool_mutex);
         g_context_pool.push(session);
     }
     g_pool_cv.notify_one();
 
-    // Store result in thread-local buffer
     static thread_local std::string thread_output;
     thread_output = output.str();
     return thread_output.c_str();
@@ -242,6 +239,5 @@ void Run_Cleanup() {
 }
 
 bool Load_Anchor_Persona(const char * system_prompt, const char * user_prompt) {
-    // Placeholder to align with C API — actual persona handling is now per request
     return system_prompt && user_prompt;
 }

@@ -1,5 +1,3 @@
-// sampling.h
-
 #ifndef XSAMPLING_H
 #define XSAMPLING_H
 
