@@ -1,29 +1,30 @@
 #ifndef BRIDGE_H
 #define BRIDGE_H
 
-#include "xsampling.h"  // ✅ C-compatible struct definition for sampling_params
+#include "xsampling.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Initialize model and context pool
-bool Load_Model(const char * model_path, int n_predict);
+// Load the model and initialize the context pool.
+// - model_path: path to the model file (.gguf, etc).
+// - n_predict: max tokens to generate per call.
+// - context_pool_size: number of reusable contexts (suggest 1–128).
+bool Load_Model(const char * model_path, int n_predict, int context_pool_size);
 
-// Set global sampling parameters
+// Override global sampling configuration for generation.
 void Set_Sampling_Params(const sampling_params * custom_params);
 
-// Run inference using system prompt, optional user history, and the current prompt
+// Run inference and return the generated output.
+// Thread-safe. Result is valid until the next call on the same thread.
 const char * Run_Inference(const char * system_prompt, const char * user_history, const char * current_prompt);
 
-// Cleanup all resources: model, samplers, and contexts
+// Free all contexts, samplers, and model memory.
 void Run_Cleanup();
 
-// Placeholder function for legacy compatibility; always returns true if inputs are valid
+// Placeholder for legacy compatibility. Always returns true if inputs are not null.
 bool Load_Anchor_Persona(const char * system_prompt, const char * user_prompt);
-
-// Get a predefined sampling profile based on fraud detection use cases
-sampling_params Get_FraudDetection_Params(const char * profile_name);
 
 #ifdef __cplusplus
 }
