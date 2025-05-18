@@ -5,26 +5,29 @@
 extern "C" {
 #endif
 
-// Load the model and initialize a context pool for concurrent use
-// model_path: path to the .gguf or compatible model file
-// n_predict: maximum number of tokens to generate per inference
+#include "sampling.h"
+
+// Load the model and pre-initialize a pool of contexts/samplers.
+// model_path: path to the model file (e.g., .gguf)
+// n_predict: default max token count per inference
 bool Load_Model(const char * model_path, int n_predict);
 
-// Anchors a persona by accepting system and user prompts (stub for API consistency)
-// For real usage, provide persona info per Run_Inference call
-bool Load_Anchor_Persona(const char * system_prompt, const char * user_prompt);
+// Override the global sampling parameters dynamically at runtime.
+// custom_params: pointer to a sampling_params struct with desired settings
+void Set_Sampling_Params(const sampling_params * custom_params);
 
-// Replaces the simpler version of Run_Inference
-// Accepts:
-//   - system_prompt: defines AI persona (e.g., "You are a fraud detection assistant")
-//   - user_history: optional prior user statement (can be empty)
-//   - current_prompt: the actual current user input to infer from
-// Returns:
-//   - thread-local char* with generated response
+// Perform inference using:
+// - system_prompt: defines AI behavior or role (e.g., "You are a legal assistant")
+// - user_history: optional prior user message (may be NULL or empty)
+// - current_prompt: the actual prompt triggering inference
+// Returns: generated response (valid until next call on the same thread)
 const char * Run_Inference(const char * system_prompt, const char * user_history, const char * current_prompt);
 
-// Frees all memory: model, contexts, samplers, and shuts down the backend
+// Frees all resources including model, samplers, and contexts
 void Run_Cleanup();
+
+// (Legacy placeholder) For API compatibility — actual persona injection is per-request
+bool Load_Anchor_Persona(const char * system_prompt, const char * user_prompt);
 
 #ifdef __cplusplus
 }
