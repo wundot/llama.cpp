@@ -1,7 +1,7 @@
 // sampling.h
 
-#ifndef SAMPLING_H
-#define SAMPLING_H
+#ifndef XSAMPLING_H
+#define XSAMPLING_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,4 +22,4 @@ typedef struct sampling_params {
 }
 #endif
 
-#endif  // SAMPLING_H
+#endif  // XSAMPLING_H
