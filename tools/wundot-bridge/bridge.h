@@ -1,7 +1,7 @@
 #ifndef BRIDGE_H
 #define BRIDGE_H
 
-#include "sampling.h"  // ✅ C++ header outside the extern "C" block
+#include "sampling.h"
 
 #ifdef __cplusplus
 extern "C" {
