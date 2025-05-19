@@ -16,10 +16,10 @@
 
 static constexpr int DEFAULT_POOL_SIZE = 8;
 
-static int             g_pool_size = DEFAULT_POOL_SIZE;
-static llama_model *   g_model     = nullptr;
-static sampling_params g_sampling_params;
-static common_params   g_common_params;
+static int                    g_pool_size = DEFAULT_POOL_SIZE;
+static llama_model *          g_model     = nullptr;
+static common_params_sampling g_sampling_params;
+static common_params          g_common_params;
 
 struct InferenceSession {
     llama_context *  ctx;
@@ -85,7 +85,7 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
 }
 
 const char * Run_Inference_With_Params(const char * system_prompt, const char * user_history,
-                                       const char * current_prompt, const sampling_params * params) {
+                                       const char * current_prompt, const common_params_sampling * params) {
     if (!g_model) {
         return "ERROR_MODEL_NOT_LOADED";
     }
