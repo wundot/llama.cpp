@@ -13,7 +13,6 @@
 #include "common.h"
 #include "llama.h"
 #include "sampling.h"
-#include "xsampling.h"
 
 // Runtime-configurable number of inference sessions (contexts + samplers)
 static int g_pool_size = 8;
