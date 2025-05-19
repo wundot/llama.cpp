@@ -18,8 +18,7 @@
 // ------------------------
 // Forward Declarations
 // ------------------------
-static void            ApplyFraudDetectionProfile(common_params_sampling & s);
-static common_chat_msg MakeChatMsg(const std::string & role, const std::string & content);
+static void ApplyFraudDetectionProfile(common_params_sampling & s);
 
 // ------------------------
 // Globals & Structs
