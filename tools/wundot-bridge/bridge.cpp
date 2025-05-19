@@ -77,7 +77,7 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
     }
 
     // Copy initial sampling parameters into global struct
-    g_sampling_params.temperature       = params.sampling.temperature;
+    g_sampling_params.temp              = params.sampling.temperature;
     g_sampling_params.top_p             = params.sampling.top_p;
     g_sampling_params.top_k             = params.sampling.top_k;
     g_sampling_params.repeat_penalty    = params.sampling.repeat_penalty;
@@ -96,7 +96,7 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
 
         // Convert SamplingParams -> common_params_sampling
         common_params_sampling sampling_config = {};
-        sampling_config.temperature            = g_sampling_params.temperature;
+        sampling_config.temp                   = g_sampling_params.temperature;
         sampling_config.top_p                  = g_sampling_params.top_p;
         sampling_config.top_k                  = g_sampling_params.top_k;
         sampling_config.repeat_penalty         = g_sampling_params.repeat_penalty;
@@ -127,7 +127,7 @@ void Set_Sampling_Params(const SamplingParams * custom_params) {
 
     // Convert SamplingParams -> common_params_sampling
     common_params_sampling sampling_config = {};
-    sampling_config.temperature            = custom_params->temperature;
+    sampling_config.temp                   = custom_params->temperature;
     sampling_config.top_p                  = custom_params->top_p;
     sampling_config.top_k                  = custom_params->top_k;
     sampling_config.repeat_penalty         = custom_params->repeat_penalty;
@@ -185,7 +185,7 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
 
     // Convert SamplingParams -> common_params_sampling
     common_params_sampling sampling_config = {};
-    sampling_config.temperature            = g_sampling_params.temperature;
+    sampling_config.temp                   = g_sampling_params.temperature;
     sampling_config.top_p                  = g_sampling_params.top_p;
     sampling_config.top_k                  = g_sampling_params.top_k;
     sampling_config.repeat_penalty         = g_sampling_params.repeat_penalty;
