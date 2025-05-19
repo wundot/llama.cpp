@@ -60,6 +60,8 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
 
     ApplyFraudDetectionProfile(g_common_params.sampling);
 
+    // Set predefined fraud detection profile via reusable function
+
     llama_backend_init();
     llama_numa_init(g_common_params.numa);
 
@@ -94,12 +96,12 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
 }
 
 const char * Run_Inference(const char * system_prompt, const char * user_history, const char * current_prompt) {
-    return Run_Inference_With_Params(system_prompt, user_history, current_prompt, &g_sampling_params, 128);
+    return Run_Inference_With_Params(system_prompt, user_history, current_prompt, &g_sampling_params);
 }
 
 const char * Run_Inference_With_Params(const char * system_prompt, const char * user_history,
-                                       const char * current_prompt, const common_params_sampling * params,
-                                       int n_predict) {
+                                       const char * current_prompt, const common_params_sampling * /*params*/,
+                                       int          n_predict) {
     InferenceSession session;
     {
         std::unique_lock<std::mutex> lock(g_pool_mutex);
@@ -114,13 +116,13 @@ const char * Run_Inference_With_Params(const char * system_prompt, const char * 
     std::vector<common_chat_msg> chat_msgs;
 
     if (system_prompt && *system_prompt) {
-        chat_msgs.push_back({ "system", system_prompt });
+        chat_msgs.push_back({ "system", system_prompt, "", "", 0 });
     }
     if (user_history && *user_history) {
-        chat_msgs.push_back({ "user", user_history });
+        chat_msgs.push_back({ "user", user_history, "", "", 0 });
     }
     if (current_prompt && *current_prompt) {
-        chat_msgs.push_back({ "user", current_prompt });
+        chat_msgs.push_back({ "user", current_prompt, "", "", 0 });
     }
 
     auto   chat_templates_ptr = common_chat_templates_init(g_model, "");
@@ -186,7 +188,7 @@ void Run_Cleanup() {
     }
 
     if (g_model) {
-        llama_free_model(g_model);
+        llama_model_free(g_model);
         g_model = nullptr;
     }
 
