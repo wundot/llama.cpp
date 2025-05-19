@@ -66,7 +66,7 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
             return false;
         }
 
-        llama_attach_threadpool(ctx, nullptr, nullptr);  // attach default threadpool
+        llama_attach_threadpool(ctx, nullptr, nullptr);
 
         common_sampler * sampler = common_sampler_init(g_model, g_sampling_params);
         if (!sampler) {
@@ -80,28 +80,12 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
     return true;
 }
 
-void Set_Sampling_Params(const sampling_params * custom_params) {
-    std::lock_guard<std::mutex> lock(g_pool_mutex);
-
-    g_sampling_params = *custom_params;
-
-    std::queue<InferenceSession> new_pool;
-    while (!g_context_pool.empty()) {
-        auto session = g_context_pool.front();
-        g_context_pool.pop();
-
-        if (session.sampler) {
-            common_sampler_free(session.sampler);
-        }
-        session.sampler = common_sampler_init(g_model, g_sampling_params);
-        new_pool.push(session);
-    }
-    g_context_pool = std::move(new_pool);
-
-    std::cout << "[LOG] Sampling parameters updated at runtime.\n";
+const char * Run_Inference(const char * system_prompt, const char * user_history, const char * current_prompt) {
+    return Run_Inference_With_Params(system_prompt, user_history, current_prompt, &g_sampling_params);
 }
 
-const char * Run_Inference(const char * system_prompt, const char * user_history, const char * current_prompt) {
+const char * Run_Inference_With_Params(const char * system_prompt, const char * user_history,
+                                       const char * current_prompt, const sampling_params * params) {
     if (!g_model) {
         return "ERROR_MODEL_NOT_LOADED";
     }
@@ -119,7 +103,7 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
     if (session.sampler) {
         common_sampler_free(session.sampler);
     }
-    session.sampler = common_sampler_init(g_model, g_sampling_params);
+    session.sampler = common_sampler_init(g_model, *params);
 
     std::ostringstream           output;
     std::vector<common_chat_msg> chat_msgs;
@@ -155,7 +139,7 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
         llama_decode(session.ctx, llama_batch_get_one(&t, 1));
     }
 
-    for (int i = 0; i < g_sampling_params.n_predict; ++i) {
+    for (int i = 0; i < params->n_predict; ++i) {
         llama_token id = common_sampler_sample(session.sampler, session.ctx, -1);
         common_sampler_accept(session.sampler, id, true);
         output << common_token_to_piece(session.ctx, id);
@@ -203,8 +187,4 @@ void Run_Cleanup() {
 
     llama_backend_free();
     std::cout << "[LOG] Cleanup complete.\n";
-}
-
-bool Load_Anchor_Persona(const char * system_prompt, const char * user_prompt) {
-    return system_prompt && user_prompt;
 }
