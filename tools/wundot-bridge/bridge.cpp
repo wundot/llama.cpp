@@ -14,6 +14,17 @@
 #include "llama.h"
 #include "sampling.h"
 
+void ApplyFraudDetectionProfile(common_params_sampling & s) {
+    // Tuned for fraud/scam detection: cautious, focused, and coherent output
+    s.temp            = 0.25f;  // lower randomness for more deterministic answers
+    s.top_p           = 0.85f;  // slightly tighter nucleus sampling
+    s.top_k           = 30;     // reduced vocabulary spread
+    s.penalty_repeat  = 1.3f;   // stronger penalty to reduce hallucination
+    s.penalty_present = 0.3f;   // encourage introduction of new tokens
+    s.penalty_freq    = 0.4f;   // discourage repeated patterns
+    s.mirostat        = 0;      // disabled for fraud profiles to maintain control
+}
+
 static constexpr int DEFAULT_POOL_SIZE = 8;
 
 static int                    g_pool_size = DEFAULT_POOL_SIZE;
@@ -46,6 +57,8 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
     g_common_params            = common_params();
     g_common_params.model.path = model_path;
     g_common_params.n_predict  = n_predict;
+
+    ApplyFraudDetectionProfile(g_common_params.sampling);
 
     llama_backend_init();
     llama_numa_init(g_common_params.numa);
