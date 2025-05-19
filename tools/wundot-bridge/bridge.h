@@ -11,19 +11,19 @@
 extern "C" {
 #endif
 
-// Extended structure for full sampling control
-typedef struct {
-    float temperature;
-    int   top_k;
-    float top_p;
-    float repeat_penalty;
-    int   n_predict;
-    float frequency_penalty;
-    float presence_penalty;
-    int   mirostat;  // Add missing field
-    int   num_stop_sequences;
-    char  stop_sequences[MAX_STOP_SEQUENCES][MAX_STOP_LENGTH];
-} SamplingParams;
+// // Extended structure for full sampling control
+// typedef struct {
+//     float temp;
+//     int   top_k;
+//     float top_p;
+//     float repeat_penalty;
+//     int   n_predict;
+//     float frequency_penalty;
+//     float presence_penalty;
+//     int   mirostat;  // Add missing field
+//     int   num_stop_sequences;
+//     char  stop_sequences[MAX_STOP_SEQUENCES][MAX_STOP_LENGTH];
+// } SamplingParams;
 
 // Load the model and initialize the context pool.
 // - model_path: path to the model file (.gguf, etc).
