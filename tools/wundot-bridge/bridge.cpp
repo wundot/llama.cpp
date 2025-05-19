@@ -87,6 +87,16 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
 const char * Run_Inference_With_Params(const char * system_prompt, const char * user_history,
                                        const char * current_prompt, const common_params_sampling * params,
                                        int n_predict) {
+    InferenceSession session;
+    {
+        std::unique_lock<std::mutex> lock(g_pool_mutex);
+        g_pool_cv.wait(lock, [] { return !g_context_pool.empty(); });
+        session = g_context_pool.front();
+        g_context_pool.pop();
+    }
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     std::ostringstream           output;
     std::vector<common_chat_msg> chat_msgs;
 
