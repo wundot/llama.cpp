@@ -1,7 +1,7 @@
 #ifndef BRIDGE_H
 #define BRIDGE_H
 
-#include "xsampling.h"
+#include "sampling.h"
 
 #ifdef __cplusplus
 extern "C" {
