@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "chat.h"
+#include "chat_utils.h"
 #include "common.h"
 #include "llama.h"
 #include "sampling.h"
@@ -50,18 +51,6 @@ static void ApplyFraudDetectionProfile(common_params_sampling & s) {
     s.penalty_present = 0.3f;
     s.penalty_freq    = 0.4f;
     s.mirostat        = 0;
-}
-
-static common_chat_msg MakeChatMsg(const std::string & role, const std::string & content) {
-    common_chat_msg msg;
-    msg.role              = role;
-    msg.content           = content;
-    msg.content_parts     = {};
-    msg.tool_calls        = {};
-    msg.reasoning_content = "";
-    msg.tool_name         = "";
-    msg.tool_call_id      = "";
-    return msg;
 }
 
 // ------------------------

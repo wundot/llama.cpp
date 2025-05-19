@@ -1,13 +1,13 @@
 #ifndef WUNDOT_BRIDGE_H
 #define WUNDOT_BRIDGE_H
 
+#include "chat.h"
 #include "common.h"
 #include "llama.h"
 #include "sampling.h"
 
 // Local declarations
-static void            ApplyFraudDetectionProfile(common_params_sampling & s);
-static common_chat_msg MakeChatMsg(const std::string & role, const std::string & content);
+static void ApplyFraudDetectionProfile(common_params_sampling & s);
 
 // Initialize and load model into memory with N inference contexts
 bool Load_Model(const char * model_path, int n_predict, int context_pool_size = 8);
