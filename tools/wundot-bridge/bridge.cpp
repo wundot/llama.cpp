@@ -116,13 +116,13 @@ const char * Run_Inference_With_Params(const char * system_prompt, const char * 
     std::vector<common_chat_msg> chat_msgs;
 
     if (system_prompt && *system_prompt) {
-        chat_msgs.push_back({ "system", system_prompt, "", "", 0 });
+        chat_msgs.push_back(MakeChatMsg("system", system_prompt));
     }
     if (user_history && *user_history) {
-        chat_msgs.push_back({ "user", user_history, "", "", 0 });
+        chat_msgs.push_back(MakeChatMsg("user", user_history));
     }
     if (current_prompt && *current_prompt) {
-        chat_msgs.push_back({ "user", current_prompt, "", "", 0 });
+        chat_msgs.push_back(MakeChatMsg("user", current_prompt));
     }
 
     auto   chat_templates_ptr = common_chat_templates_init(g_model, "");
@@ -194,4 +194,16 @@ void Run_Cleanup() {
 
     llama_backend_free();
     std::cout << "[LOG] Cleanup complete.\n";
+}
+
+static common_chat_msg MakeChatMsg(const std::string & role, const std::string & content) {
+    common_chat_msg msg;
+    msg.role              = role;
+    msg.content           = content;
+    msg.content_parts     = {};
+    msg.tool_calls        = {};
+    msg.reasoning_content = "";
+    msg.tool_name         = "";
+    msg.tool_call_id      = "";
+    return msg;
 }

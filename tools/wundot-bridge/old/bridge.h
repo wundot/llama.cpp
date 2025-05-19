@@ -1,46 +1,68 @@
-#pragma once
+#ifndef WUNDOT_BRIDGE_H
+#define WUNDOT_BRIDGE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_STOP_SEQUENCES 4
-#define MAX_STOP_LENGTH    64
-
-// Extended structure for full sampling control
+// Struct must match layout with Go-side CGO struct
 typedef struct {
-    float temperature;
-    int   top_k;
+    float temp;
     float top_p;
-    float repeat_penalty;
-    int   n_predict;
-    float frequency_penalty;
-    float presence_penalty;
-    int   num_stop_sequences;
-    char  stop_sequences[MAX_STOP_SEQUENCES][MAX_STOP_LENGTH];
-} SamplingParams;
+    int   top_k;
+    float penalty_repeat;
+    float penalty_present;
+    float penalty_freq;
+    int   mirostat;
+} common_params_sampling;
 
-// Forward declaration of stateful inference session
-typedef struct InferenceSession InferenceSession;
+/**
+ * Initializes the LLaMA model from file, sets up thread-safe context pool.
+ *
+ * @param model_path path to the model file
+ * @param n_predict number of tokens to predict per inference
+ * @param context_pool_size number of reusable contexts to preload
+ * @return 1 on success, 0 on failure
+ */
+int Load_Model(const char * model_path, int n_predict, int context_pool_size);
 
-// Load model once globally
-void * load_model_wrapper(const char * model_path, int n_predict);
+/**
+ * Runs inference with default (predefined) fraud detection sampling parameters.
+ *
+ * @param system_prompt the initial system instruction
+ * @param user_history optional previous user inputs
+ * @param current_prompt current user input
+ * @return generated output text (valid until next thread call)
+ */
+const char * Run_Inference(const char * system_prompt, const char * user_history, const char * current_prompt);
 
-// Cleanup model
-void run_cleanup_wrapper();
+/**
+ * Runs inference using a custom sampling parameter configuration.
+ *
+ * @param system_prompt the initial system instruction
+ * @param user_history optional previous user inputs
+ * @param current_prompt current user input
+ * @param params pointer to sampling parameters
+ * @param n_predict number of tokens to generate
+ * @return generated output text (valid until next thread call)
+ */
+const char * Run_Inference_With_Params(const char * system_prompt, const char * user_history,
+                                       const char * current_prompt, const common_params_sampling * params,
+                                       int n_predict);
 
-// Stateless inference
-const char * run_inferance_wrapper(const char * prompt);
+/**
+ * Applies the built-in optimized profile for fraud/scam detection.
+ * This mutates the `common_params_sampling` passed in.
+ */
+void ApplyFraudDetectionProfile(common_params_sampling * params);
 
-// Stateless inference with full sampling control
-const char * run_infer_with_sampling(const char * prompt, SamplingParams params);
-
-// Stateful inference (streaming support)
-InferenceSession * session_create(const char * model_path, int n_predict);
-void               session_free(InferenceSession * session);
-void               session_start_stream(InferenceSession * session, const char * prompt);
-const char *       session_next_token(InferenceSession * session);
+/**
+ * Frees all loaded model resources and context sessions.
+ */
+void Run_Cleanup(void);
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif  // WUNDOT_BRIDGE_H
