@@ -14,17 +14,15 @@
 #include "llama.h"
 #include "sampling.h"
 
-void ApplyFraudDetectionProfile(common_params_sampling & s) {
-    // Tuned for fraud/scam detection: cautious, focused, and coherent output
-    s.temp            = 0.25f;  // lower randomness for more deterministic answers
-    s.top_p           = 0.85f;  // slightly tighter nucleus sampling
-    s.top_k           = 30;     // reduced vocabulary spread
-    s.penalty_repeat  = 1.3f;   // stronger penalty to reduce hallucination
-    s.penalty_present = 0.3f;   // encourage introduction of new tokens
-    s.penalty_freq    = 0.4f;   // discourage repeated patterns
-    s.mirostat        = 0;      // disabled for fraud profiles to maintain control
-}
+// ------------------------
+// Forward Declarations
+// ------------------------
+static void            ApplyFraudDetectionProfile(common_params_sampling & s);
+static common_chat_msg MakeChatMsg(const std::string & role, const std::string & content);
 
+// ------------------------
+// Globals & Structs
+// ------------------------
 static constexpr int DEFAULT_POOL_SIZE = 8;
 
 static int                    g_pool_size = DEFAULT_POOL_SIZE;
@@ -41,6 +39,34 @@ static std::queue<InferenceSession> g_context_pool;
 static std::mutex                   g_pool_mutex;
 static std::condition_variable      g_pool_cv;
 
+// ------------------------
+// Helper Implementations
+// ------------------------
+static void ApplyFraudDetectionProfile(common_params_sampling & s) {
+    s.temp            = 0.25f;
+    s.top_p           = 0.85f;
+    s.top_k           = 30;
+    s.penalty_repeat  = 1.3f;
+    s.penalty_present = 0.3f;
+    s.penalty_freq    = 0.4f;
+    s.mirostat        = 0;
+}
+
+static common_chat_msg MakeChatMsg(const std::string & role, const std::string & content) {
+    common_chat_msg msg;
+    msg.role              = role;
+    msg.content           = content;
+    msg.content_parts     = {};
+    msg.tool_calls        = {};
+    msg.reasoning_content = "";
+    msg.tool_name         = "";
+    msg.tool_call_id      = "";
+    return msg;
+}
+
+// ------------------------
+// Core API
+// ------------------------
 bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
     std::lock_guard<std::mutex> lock(g_pool_mutex);
 
@@ -59,8 +85,6 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
     g_common_params.n_predict  = n_predict;
 
     ApplyFraudDetectionProfile(g_common_params.sampling);
-
-    // Set predefined fraud detection profile via reusable function
 
     llama_backend_init();
     llama_numa_init(g_common_params.numa);
@@ -115,6 +139,7 @@ const char * Run_Inference_With_Params(const char * system_prompt, const char * 
     std::ostringstream           output;
     std::vector<common_chat_msg> chat_msgs;
 
+    // ✅ Refactored message setup using MakeChatMsg
     if (system_prompt && *system_prompt) {
         chat_msgs.push_back(MakeChatMsg("system", system_prompt));
     }
@@ -194,16 +219,4 @@ void Run_Cleanup() {
 
     llama_backend_free();
     std::cout << "[LOG] Cleanup complete.\n";
-}
-
-static common_chat_msg MakeChatMsg(const std::string & role, const std::string & content) {
-    common_chat_msg msg;
-    msg.role              = role;
-    msg.content           = content;
-    msg.content_parts     = {};
-    msg.tool_calls        = {};
-    msg.reasoning_content = "";
-    msg.tool_name         = "";
-    msg.tool_call_id      = "";
-    return msg;
 }
