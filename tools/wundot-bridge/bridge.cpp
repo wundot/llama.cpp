@@ -85,26 +85,8 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
 }
 
 const char * Run_Inference_With_Params(const char * system_prompt, const char * user_history,
-                                       const char * current_prompt, const common_params_sampling * params) {
-    if (!g_model) {
-        return "ERROR_MODEL_NOT_LOADED";
-    }
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    InferenceSession session;
-    {
-        std::unique_lock<std::mutex> lock(g_pool_mutex);
-        g_pool_cv.wait(lock, [] { return !g_context_pool.empty(); });
-        session = g_context_pool.front();
-        g_context_pool.pop();
-    }
-
-    if (session.sampler) {
-        common_sampler_free(session.sampler);
-    }
-    session.sampler = common_sampler_init(g_model, *params);
-
+                                       const char * current_prompt, const common_params_sampling * params,
+                                       int n_predict) {
     std::ostringstream           output;
     std::vector<common_chat_msg> chat_msgs;
 
@@ -139,7 +121,7 @@ const char * Run_Inference_With_Params(const char * system_prompt, const char * 
         llama_decode(session.ctx, llama_batch_get_one(&t, 1));
     }
 
-    for (int i = 0; i < params->n_predict; ++i) {
+    for (int i = 0; i < n_predict; ++i) {
         llama_token id = common_sampler_sample(session.sampler, session.ctx, -1);
         common_sampler_accept(session.sampler, id, true);
         output << common_token_to_piece(session.ctx, id);

@@ -3,19 +3,19 @@
 
 #include "common.h"
 
-// Loads the model once and initializes context pool.
-// Must be called before any inference.
+// Initialize and load the model into memory. Creates a context pool.
 extern "C" bool Load_Model(const char * model_path, int n_predict, int context_pool_size);
 
-// Runs inference using the default sampling parameters.
+// Run inference with default global sampling parameters.
 extern "C" const char * Run_Inference(const char * system_prompt, const char * user_history,
                                       const char * current_prompt);
 
-// Runs inference using custom sampling parameters for this specific request.
+// Run inference using provided sampling parameters and prediction limit.
 extern "C" const char * Run_Inference_With_Params(const char * system_prompt, const char * user_history,
-                                                  const char * current_prompt, const common_params_sampling * params);
+                                                  const char * current_prompt, const common_params_sampling * params,
+                                                  int n_predict);
 
-// Frees all resources and shuts down LLaMA backend.
+// Cleanup all contexts, samplers, and unload the model.
 extern "C" void Run_Cleanup();
 
 #endif  // BRIDGE_H
