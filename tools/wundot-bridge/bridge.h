@@ -7,6 +7,19 @@
 extern "C" {
 #endif
 
+// Extended structure for full sampling control
+typedef struct {
+    float temperature;
+    int   top_k;
+    float top_p;
+    float repeat_penalty;
+    int   n_predict;
+    float frequency_penalty;
+    float presence_penalty;
+    int   num_stop_sequences;
+    char  stop_sequences[MAX_STOP_SEQUENCES][MAX_STOP_LENGTH];
+} SamplingParams;
+
 // Load the model and initialize the context pool.
 // - model_path: path to the model file (.gguf, etc).
 // - n_predict: max tokens to generate per call.
@@ -14,7 +27,7 @@ extern "C" {
 bool Load_Model(const char * model_path, int n_predict, int context_pool_size);
 
 // Override global sampling configuration for generation.
-void Set_Sampling_Params(const sampling_params * custom_params);
+void Set_Sampling_Params(const SamplingParams * custom_params);
 
 // Run inference and return the generated output.
 // Thread-safe. Result is valid until the next call on the same thread.

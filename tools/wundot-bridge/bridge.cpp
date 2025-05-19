@@ -21,7 +21,7 @@ static int g_pool_size = 8;
 static llama_model * g_model = nullptr;
 
 // Sampling parameters used for generation (set externally)
-static sampling_params g_sampling_params;
+static SamplingParams g_sampling_params;
 
 // Each session holds a decoder context and a sampler instance
 struct InferenceSession {
@@ -112,7 +112,7 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
 // Replaces the global sampling configuration with a custom struct
 // sent from an external caller (e.g., Go via CGO).
 //
-void Set_Sampling_Params(const sampling_params * custom_params) {
+void Set_Sampling_Params(const SamplingParams * custom_params) {
     std::lock_guard<std::mutex> lock(g_pool_mutex);
     g_sampling_params = *custom_params;
     std::cout << "[LOG] Sampling parameters updated at runtime.\n";
