@@ -81,7 +81,7 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
 }
 
 const char * Run_Inference(const char * system_prompt, const char * user_history, const char * current_prompt) {
-    return Run_Inference_With_Params(system_prompt, user_history, current_prompt, &g_sampling_params);
+    return Run_Inference_With_Params(system_prompt, user_history, current_prompt, &g_sampling_params, 128);
 }
 
 const char * Run_Inference_With_Params(const char * system_prompt, const char * user_history,
