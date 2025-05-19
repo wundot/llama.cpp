@@ -1,6 +1,10 @@
 #ifndef BRIDGE_H
 #define BRIDGE_H
 
+// Define constants for stop sequences
+#define MAX_STOP_SEQUENCES 16
+#define MAX_STOP_LENGTH    128
+
 #include "sampling.h"
 
 #ifdef __cplusplus
@@ -16,6 +20,7 @@ typedef struct {
     int   n_predict;
     float frequency_penalty;
     float presence_penalty;
+    int   mirostat;  // Add missing field
     int   num_stop_sequences;
     char  stop_sequences[MAX_STOP_SEQUENCES][MAX_STOP_LENGTH];
 } SamplingParams;

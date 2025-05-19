@@ -77,7 +77,7 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
     }
 
     // Copy initial sampling parameters into global struct
-    g_sampling_params.temp              = params.sampling.temp;
+    g_sampling_params.temperature       = params.sampling.temperature;
     g_sampling_params.top_p             = params.sampling.top_p;
     g_sampling_params.top_k             = params.sampling.top_k;
     g_sampling_params.repeat_penalty    = params.sampling.repeat_penalty;
@@ -94,7 +94,17 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
             return false;
         }
 
-        common_sampler * sampler = common_sampler_init(g_model, g_sampling_params);
+        // Convert SamplingParams -> common_params_sampling
+        common_params_sampling sampling_config = {};
+        sampling_config.temperature            = g_sampling_params.temperature;
+        sampling_config.top_p                  = g_sampling_params.top_p;
+        sampling_config.top_k                  = g_sampling_params.top_k;
+        sampling_config.repeat_penalty         = g_sampling_params.repeat_penalty;
+        sampling_config.presence_penalty       = g_sampling_params.presence_penalty;
+        sampling_config.frequency_penalty      = g_sampling_params.frequency_penalty;
+        sampling_config.mirostat               = g_sampling_params.mirostat;
+
+        common_sampler * sampler = common_sampler_init(g_model, sampling_config);
         if (!sampler) {
             return false;
         }
@@ -114,7 +124,34 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
 //
 void Set_Sampling_Params(const SamplingParams * custom_params) {
     std::lock_guard<std::mutex> lock(g_pool_mutex);
+
+    // Convert SamplingParams -> common_params_sampling
+    common_params_sampling sampling_config = {};
+    sampling_config.temperature            = custom_params->temperature;
+    sampling_config.top_p                  = custom_params->top_p;
+    sampling_config.top_k                  = custom_params->top_k;
+    sampling_config.repeat_penalty         = custom_params->repeat_penalty;
+    sampling_config.presence_penalty       = custom_params->presence_penalty;
+    sampling_config.frequency_penalty      = custom_params->frequency_penalty;
+    sampling_config.mirostat               = custom_params->mirostat;
+
+    // Update global SamplingParams
     g_sampling_params = *custom_params;
+
+    // Optionally reinitialize samplers in the pool
+    std::queue<InferenceSession> new_pool;
+    while (!g_context_pool.empty()) {
+        auto session = g_context_pool.front();
+        g_context_pool.pop();
+
+        if (session.sampler) {
+            common_sampler_free(session.sampler);
+        }
+        session.sampler = common_sampler_init(g_model, sampling_config);
+        new_pool.push(session);
+    }
+    g_context_pool = new_pool;
+
     std::cout << "[LOG] Sampling parameters updated at runtime.\n";
 }
 
@@ -146,11 +183,21 @@ const char * Run_Inference(const char * system_prompt, const char * user_history
                   << "\n";
     }
 
+    // Convert SamplingParams -> common_params_sampling
+    common_params_sampling sampling_config = {};
+    sampling_config.temperature            = g_sampling_params.temperature;
+    sampling_config.top_p                  = g_sampling_params.top_p;
+    sampling_config.top_k                  = g_sampling_params.top_k;
+    sampling_config.repeat_penalty         = g_sampling_params.repeat_penalty;
+    sampling_config.presence_penalty       = g_sampling_params.presence_penalty;
+    sampling_config.frequency_penalty      = g_sampling_params.frequency_penalty;
+    sampling_config.mirostat               = g_sampling_params.mirostat;
+
     // Reset the sampler to use the latest sampling parameters
     if (session.sampler) {
         common_sampler_free(session.sampler);
     }
-    session.sampler = common_sampler_init(g_model, g_sampling_params);
+    session.sampler = common_sampler_init(g_model, sampling_config);
 
     // Assemble chat message sequence
     std::ostringstream           output;
