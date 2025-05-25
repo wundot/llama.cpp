@@ -10,6 +10,9 @@ extern "C" {
 #include "llama.h"
 #include "sampling.h"
 
+// Check whether the model has been successfully loaded
+bool Is_Model_Loaded();
+
 // Local declarations
 static void ApplyFraudDetectionProfile(common_params_sampling & s);
 
