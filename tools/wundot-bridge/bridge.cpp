@@ -62,13 +62,13 @@ static void ApplyFraudDetectionProfile(common_params_sampling & s) {
 // ------------------------
 
 // Loads the model from file and initializes the inference context pool
-bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
+void Load_Model(const char * model_path, int n_predict, int context_pool_size) {
     std::lock_guard<std::mutex> lock(g_pool_mutex);
 
     // Avoid reloading if model is already loaded
     if (g_model) {
         std::cout << "[LOG] Model already loaded. Skipping reinitialization.\n";
-        return true;
+        return;
     }
 
     // Set the pool size, with upper-bound guard
@@ -94,7 +94,7 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
     g_model   = init.model.release();
     if (!g_model) {
         std::cerr << "[ERROR] Failed to load model.\n";
-        return false;
+        return;
     }
 
     g_sampling_params = g_common_params.sampling;
@@ -104,21 +104,22 @@ bool Load_Model(const char * model_path, int n_predict, int context_pool_size) {
         llama_context_params ctx_params = llama_context_default_params();
         llama_context *      ctx        = llama_init_from_model(g_model, ctx_params);
         if (!ctx) {
-            return false;
+            std::cerr << "[ERROR] Failed to create context " << i << ".\n";
+            continue;
         }
 
         llama_attach_threadpool(ctx, nullptr, nullptr);
 
         common_sampler * sampler = common_sampler_init(g_model, g_sampling_params);
         if (!sampler) {
-            return false;
+            std::cerr << "[ERROR] Failed to create sampler " << i << ".\n";
+            continue;
         }
 
         g_context_pool.push({ ctx, sampler });
     }
 
     std::cout << "[LOG] Model loaded and context pool initialized.\n";
-    return true;
 }
 
 // Wrapper around Run_Inference_With_Params using the default sampling parameters

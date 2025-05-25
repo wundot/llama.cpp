@@ -580,3 +580,14 @@ $ echo "source ~/.llama-completion.bash" >> ~/.bashrc
 - [minja](https://github.com/google/minja) - Minimal Jinja parser in C++, used by various tools/examples - MIT License
 - [linenoise.cpp](./tools/run/linenoise.cpp/linenoise.cpp) - C++ library that provides readline-like line editing capabilities, used by `llama-run` - BSD 2-Clause License
 - [curl](https://curl.se/) - Client-side URL transfer library, used by various tools/examples - [CURL License](https://curl.se/docs/copyright.html)
+
+
+
+Would you like this turned into a polished PDF or Word resume file or pasted into your current resume format? I can also draft a Netflix-specific cover letter if needed.
+
+
+
+cross-functional impact and  product-facing outcomes
+let me see staff level position
+Let me know if you'd like to adjust for a specific role (e.g., platform engineer, backend engineer, or staff-level position).
+mix of both  Staff Backend Engineer and Staff Platform Engineer roles, tailor accordingly
