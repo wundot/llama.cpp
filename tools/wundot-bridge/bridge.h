@@ -5,16 +5,15 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>  // Required for 'bool' type when used with CGO/C
+
 #include "chat.h"
 #include "common.h"
 #include "llama.h"
 #include "sampling.h"
 
 // Check whether the model has been successfully loaded
-bool Is_Model_Loaded();
-
-// Local declarations
-static void ApplyFraudDetectionProfile(common_params_sampling & s);
+bool Is_Model_Loaded(void);
 
 // Initialize and load model into memory with N inference contexts
 void Load_Model(const char * model_path, int n_predict, int context_pool_size);
@@ -28,7 +27,7 @@ const char * Run_Inference_With_Params(const char * system_prompt, const char * 
                                        int n_predict);
 
 // Clean up memory, models, and inference sessions
-void Run_Cleanup();
+void Run_Cleanup(void);
 
 #ifdef __cplusplus
 }
