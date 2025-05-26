@@ -7,7 +7,10 @@ project(wundot-bridge LANGUAGES CXX)
 set(TARGET wundot-bridge)
 
 # Build the shared library
-add_library(${TARGET} SHARED bridge.cpp)
+add_library(${TARGET} SHARED 
+bridge.cpp 
+chat_utils.cpp
+)
 
 # Include necessary directories
 target_include_directories(${TARGET} PRIVATE
