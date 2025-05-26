@@ -1,16 +1,16 @@
 #ifndef WUNDOT_BRIDGE_H
 #define WUNDOT_BRIDGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdbool.h>  // Required for 'bool' type when used with CGO/C
 
 #include "chat.h"
 #include "common.h"
 #include "llama.h"
 #include "sampling.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Check whether the model has been successfully loaded
 bool Is_Model_Loaded(void);
