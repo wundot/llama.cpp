@@ -28,4 +28,3 @@ git branch --set-upstream-to=origin/llama.cpp main
   --stop "Answer:" \
   --log-disable
 
-737-400-1471

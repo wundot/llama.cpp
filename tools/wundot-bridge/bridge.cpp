@@ -206,7 +206,12 @@ const char * Run_Inference_With_Params(const char * system_prompt, const char * 
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "[PROFILE] Inference took " << duration_ms << " ms\n";
 
-    return strdup(out_str.c_str());
+    auto results = strdup(out_str.c_str());
+
+    std::cout << "\n\n -------------------- \n\n\n[RESULTS]\n\n Inference OUTPUT \n\n"
+              << results << "\n\n -------------------- \n\n\n";
+
+    return results;
 }
 
 // Clean up all sessions, samplers, and model memory
