@@ -135,6 +135,8 @@ const char * Run_Inference_With_Params(const char * system_prompt, const char * 
         return strdup("[ERROR] Model not loaded");
     }
     model_check.~lock_guard();
+    std::cout
+        << "\n\n -------------------- \n\n\n[PROFILE]\n\n Inference about to start \n\n -------------------- \n\n\n";
 
     InferenceSession session;
     {
